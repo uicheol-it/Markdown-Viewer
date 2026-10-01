@@ -1,28 +1,28 @@
-# Markdown Viewer
+# Markdown Viewer - 마크다운 편집기
 
-A small, private-by-default Markdown editor and preview. Open a local Markdown or text file, drop one onto the page, or edit the included sample. The rendered preview updates as you type.
+로컬에서 안전하게 사용할 수 있는 간편한 마크다운 편집기입니다. 기기에 저장된 마크다운 또는 텍스트 파일을 열거나, 파일을 화면에 끌어다 놓거나, 포함된 예제를 편집해 보세요. 입력하는 즉시 미리보기가 갱신됩니다.
 
-## Features
+## 주요 기능
 
-- GitHub Flavored Markdown, including tables, task lists, and strikethrough.
-- HTML is sanitized before it is rendered in the preview.
-- Responsive side-by-side editor and preview, with a simple view switcher on small screens.
-- Local file loading and drag-and-drop; documents are not uploaded or saved by the app.
+- 표, 작업 목록, 취소선을 포함한 GitHub Flavored Markdown(GFM)을 지원합니다.
+- 미리보기에 표시하기 전에 HTML을 정화합니다.
+- 편집기와 미리보기를 나란히 보여 주며, 작은 화면에서는 보기 전환 기능을 제공합니다.
+- 로컬 파일 열기와 끌어다 놓기를 지원합니다. 문서는 앱으로 업로드되거나 앱에 저장되지 않습니다.
 
-## Run locally
+## 로컬에서 실행하기
 
-Requires Node.js 20 or later.
+Node.js 20 이상이 필요합니다.
 
 ```sh
 npm install
 npm run dev
 ```
 
-Open the local URL printed by Vite. To create a production build or run the focused renderer tests:
+Vite가 출력하는 로컬 URL을 브라우저에서 여세요. 프로덕션 빌드를 만들거나 마크다운 렌더링 테스트를 실행하려면 다음 명령을 사용하세요.
 
 ```sh
 npm run build
 npm test
 ```
 
-Markdown rendering uses `marked` with GFM enabled. Rendered HTML passes through DOMPurify before it is inserted into the preview.
+마크다운 렌더링에는 GFM을 활성화한 `marked`를 사용합니다. 렌더링된 HTML은 미리보기에 삽입되기 전에 DOMPurify를 거칩니다.

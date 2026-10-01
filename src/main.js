@@ -40,7 +40,7 @@ const fileInput = document.querySelector("#file-input");
 const dropOverlay = document.querySelector("#drop-overlay");
 const toast = document.querySelector("#toast");
 let toastTimer;
-let activeFilename = "Welcome.md";
+let activeFilename = "예제.md";
 
 function updateDocument() {
   const markdown = input.value;
@@ -49,9 +49,9 @@ function updateDocument() {
 
   preview.innerHTML = markdown.trim()
     ? renderMarkdown(markdown)
-    : '<div class="empty-preview"><span aria-hidden="true">✎</span><h3>Your preview is waiting</h3><p>Start writing in the editor, or open a Markdown file to see it here.</p></div>';
+    : '<div class="empty-preview"><span aria-hidden="true">✎</span><h3>미리보기가 여기에 표시됩니다</h3><p>편집기에서 작성을 시작하거나 마크다운 파일을 열어 보세요.</p></div>';
   name.textContent = activeFilename;
-  stats.textContent = `${words} ${words === 1 ? "word" : "words"} · ${lines} ${lines === 1 ? "line" : "lines"}`;
+  stats.textContent = `단어 ${words}개 · ${lines}줄`;
   lineGutter.textContent = Array.from({ length: lines }, (_, index) => index + 1).join("\n");
 }
 
@@ -66,7 +66,7 @@ function loadFile(file) {
   if (!file) return;
   const supported = /\.(md|markdown|mdown|mkd|txt)$/i.test(file.name) || file.type === "text/markdown" || file.type === "text/plain";
   if (!supported) {
-    showToast("Please choose a Markdown or plain text file.");
+    showToast("마크다운 또는 일반 텍스트 파일을 선택해 주세요.");
     return;
   }
 
@@ -76,9 +76,9 @@ function loadFile(file) {
     activeFilename = file.name;
     updateDocument();
     input.focus();
-    showToast(`Opened ${file.name}`);
+    showToast(`파일을 열었습니다: ${file.name}`);
   });
-  reader.addEventListener("error", () => showToast("This file could not be read. Please try another one."));
+  reader.addEventListener("error", () => showToast("파일을 읽을 수 없습니다. 다른 파일을 선택해 주세요."));
   reader.readAsText(file);
 }
 
@@ -95,7 +95,7 @@ fileInput.addEventListener("change", () => {
 
 document.querySelector("#sample-button").addEventListener("click", () => {
   input.value = SAMPLE;
-  activeFilename = "Welcome.md";
+  activeFilename = "예제.md";
   updateDocument();
   input.focus();
 });
