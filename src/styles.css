@@ -82,6 +82,21 @@ button { color: inherit; }
 .pane { min-width: 0; display: flex; flex-direction: column; }
 .pane-editor { border-right: 1px solid var(--line); background: #fcfcfd; }
 .pane-toolbar { height: 52px; flex: 0 0 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 19px; border-bottom: 1px solid var(--line); }
+.preview-actions { display: flex; align-items: center; gap: 8px; }
+.preview-tabs { display: inline-flex; padding: 3px; border: 1px solid #e9ebef; border-radius: 7px; background: #f8f9fb; }
+.preview-tab { padding: 5px 8px; border: 0; border-radius: 5px; background: transparent; color: #858d9a; cursor: pointer; font-size: 10px; font-weight: 600; white-space: nowrap; }
+.preview-tab.active { background: white; color: #515fc6; box-shadow: 0 1px 3px #2530491a; }
+.preview-tab:disabled { cursor: not-allowed; opacity: .55; }
+.translation-settings { padding: 13px 19px; border-bottom: 1px solid var(--line); background: #fafbff; color: #687181; font-size: 11px; line-height: 1.55; }
+.translation-settings[hidden] { display: none; }
+.translation-settings h3 { margin: 0 0 5px; color: #343b48; font-size: 12px; }
+.translation-settings p { margin: 0 0 9px; }
+.translation-settings label { display: block; margin-bottom: 4px; color: #555e6d; font-weight: 600; }
+.translation-endpoint-row { display: flex; gap: 7px; }
+.translation-endpoint-row input { width: 100%; min-width: 0; height: 34px; padding: 0 9px; border: 1px solid #dfe3eb; border-radius: 6px; background: white; color: #404653; font: 11px "DM Mono", monospace; }
+.translation-endpoint-row .button { min-height: 34px; flex: 0 0 auto; }
+.translation-settings .translation-contract { margin: 6px 0 0; color: #8c94a1; font-size: 10px; }
+.translation-status { margin: 0; padding: 8px 19px; border-bottom: 1px solid #f0f1f4; color: #858d9a; font-size: 10px; line-height: 1.5; }
 .pane-title { display: flex; align-items: center; gap: 9px; }
 .pane-title h2 { margin: 0; color: #343b48; font-size: 12px; font-weight: 700; }
 .pane-dot { width: 7px; height: 7px; border-radius: 50%; }
@@ -163,6 +178,11 @@ button { color: inherit; }
   .pane.mobile-active { display: flex; }
   .pane-editor { border-right: 0; }
   .pane-toolbar { height: 47px; flex-basis: 47px; padding: 0 15px; }
+  .pane-preview > .pane-toolbar { gap: 6px; padding: 0 9px; }
+  .preview-actions { gap: 4px; }
+  .preview-tab { padding: 5px 6px; font-size: 9px; }
+  .translation-settings { padding: 12px; }
+  .translation-status { padding: 8px 12px; }
   .editor-wrap { padding-top: 16px; }
   .line-gutter { width: 39px; flex-basis: 39px; padding-right: 11px; font-size: 11px; }
   #markdown-input { padding-right: 14px; font-size: 11px; line-height: 22px; }
