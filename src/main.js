@@ -1,4 +1,5 @@
 import { renderMarkdown } from "./markdown.js";
+import { isKoreanDocument, translateMarkdown, validateTranslationEndpoint } from "./translation.js";
 import "./styles.css";
 
 const SAMPLE = `# A little space for your ideas
@@ -39,17 +40,32 @@ const lineGutter = document.querySelector("#line-gutter");
 const fileInput = document.querySelector("#file-input");
 const dropOverlay = document.querySelector("#drop-overlay");
 const toast = document.querySelector("#toast");
+const translationEndpointInput = document.querySelector("#translation-endpoint");
+const translationSettings = document.querySelector("#translation-settings");
+const translationStatus = document.querySelector("#translation-status");
+const originalPreviewButton = document.querySelector("#preview-original-button");
+const koreanPreviewButton = document.querySelector("#preview-korean-button");
 let toastTimer;
 let activeFilename = "예제.md";
+let translationEndpoint = window.localStorage.getItem("translation-endpoint") ?? "";
+let translatedMarkdown = "";
+let translationTimer;
+let translationController;
+let documentRevision = 0;
+let previewLanguage = "original";
+
+translationEndpointInput.value = translationEndpoint;
 
 function updateDocument() {
   const markdown = input.value;
   const lines = markdown.split("\n").length;
   const words = markdown.trim() ? markdown.trim().split(/\s+/).length : 0;
 
-  preview.innerHTML = markdown.trim()
-    ? renderMarkdown(markdown)
+  const displayedMarkdown = previewLanguage === "korean" ? translatedMarkdown : markdown;
+  preview.innerHTML = displayedMarkdown.trim()
+    ? renderMarkdown(displayedMarkdown)
     : '<div class="empty-preview"><span aria-hidden="true">✎</span><h3>미리보기가 여기에 표시됩니다</h3><p>편집기에서 작성을 시작하거나 마크다운 파일을 열어 보세요.</p></div>';
+  koreanPreviewButton.disabled = !translatedMarkdown;
   name.textContent = activeFilename;
   stats.textContent = `단어 ${words}개 · ${lines}줄`;
   lineGutter.textContent = Array.from({ length: lines }, (_, index) => index + 1).join("\n");
@@ -75,6 +91,7 @@ function loadFile(file) {
     input.value = typeof reader.result === "string" ? reader.result : "";
     activeFilename = file.name;
     updateDocument();
+    scheduleTranslation();
     input.focus();
     showToast(`파일을 열었습니다: ${file.name}`);
   });
@@ -82,7 +99,10 @@ function loadFile(file) {
   reader.readAsText(file);
 }
 
-input.addEventListener("input", updateDocument);
+input.addEventListener("input", () => {
+  updateDocument();
+  scheduleTranslation();
+});
 input.addEventListener("scroll", () => {
   lineGutter.scrollTop = input.scrollTop;
 });
@@ -97,8 +117,110 @@ document.querySelector("#sample-button").addEventListener("click", () => {
   input.value = SAMPLE;
   activeFilename = "예제.md";
   updateDocument();
+  scheduleTranslation();
   input.focus();
 });
+
+function setPreviewLanguage(language) {
+  previewLanguage = language;
+  for (const [button, active] of [
+    [originalPreviewButton, language === "original"],
+    [koreanPreviewButton, language === "korean"],
+  ]) {
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  }
+  updateDocument();
+}
+
+originalPreviewButton.addEventListener("click", () => setPreviewLanguage("original"));
+koreanPreviewButton.addEventListener("click", () => setPreviewLanguage("korean"));
+
+document.querySelector("#translation-settings-button").addEventListener("click", (event) => {
+  const expanded = event.currentTarget.getAttribute("aria-expanded") === "true";
+  event.currentTarget.setAttribute("aria-expanded", String(!expanded));
+  translationSettings.hidden = expanded;
+});
+
+document.querySelector("#save-translation-settings").addEventListener("click", () => {
+  let endpoint;
+  try {
+    endpoint = validateTranslationEndpoint(translationEndpointInput.value);
+  } catch (error) {
+    showToast(error.message);
+    return;
+  }
+
+  translationEndpoint = endpoint;
+  window.localStorage.setItem("translation-endpoint", endpoint);
+  translationStatus.textContent = "번역 서비스가 설정되었습니다. 비한국어 문서는 동의 후 자동 번역됩니다.";
+  showToast("번역 서비스 주소를 저장했습니다.");
+  scheduleTranslation();
+});
+
+function scheduleTranslation() {
+  window.clearTimeout(translationTimer);
+  translationController?.abort();
+  translatedMarkdown = "";
+  if (previewLanguage === "korean") {
+    setPreviewLanguage("original");
+  } else {
+    updateDocument();
+  }
+  documentRevision += 1;
+  const revision = documentRevision;
+
+  if (!input.value.trim()) {
+    translationStatus.textContent = "번역할 문서가 없습니다.";
+    if (previewLanguage === "korean") updateDocument();
+    return;
+  }
+  if (isKoreanDocument(input.value)) {
+    translationStatus.textContent = "한국어 문서로 판단되어 번역하지 않습니다.";
+    if (previewLanguage === "korean") updateDocument();
+    return;
+  }
+  if (!translationEndpoint) {
+    translationStatus.textContent = "번역 서비스 주소를 설정하면 한국어가 아닌 문서를 자동 번역합니다.";
+    if (previewLanguage === "korean") updateDocument();
+    return;
+  }
+
+  translationStatus.textContent = "한국어 번역을 준비하고 있습니다.";
+  translationTimer = window.setTimeout(() => requestTranslation(revision), 500);
+}
+
+async function requestTranslation(revision) {
+  const consentKey = "translation-consent";
+  if (window.localStorage.getItem(consentKey) !== translationEndpoint) {
+    const consent = window.confirm(
+      `문서 전체의 Markdown 텍스트가 설정한 외부 번역 서비스(${translationEndpoint})로 전송됩니다. 코드와 주석을 포함한 내용의 개인정보 처리 방침을 확인했으며 번역을 계속하시겠습니까?`,
+    );
+    if (!consent) {
+      translationStatus.textContent = "동의하지 않아 번역하지 않았습니다. 원문은 이 기기에 그대로 있습니다.";
+      return;
+    }
+    window.localStorage.setItem(consentKey, translationEndpoint);
+  }
+
+  translationController = new AbortController();
+  const source = input.value;
+  translationStatus.textContent = "문서를 한국어로 번역하고 있습니다.";
+  try {
+    const result = await translateMarkdown(source, translationEndpoint, {
+      fetchImpl: window.fetch.bind(window),
+      signal: translationController.signal,
+    });
+    if (revision !== documentRevision) return;
+    translatedMarkdown = result;
+    translationStatus.textContent = "한국어 번역이 완료되었습니다. 원문은 편집기에 보존되어 있습니다.";
+    setPreviewLanguage("korean");
+  } catch (error) {
+    if (error.name === "AbortError" || revision !== documentRevision) return;
+    translationStatus.textContent = "번역하지 못했습니다. 서비스 주소와 네트워크를 확인해 주세요.";
+    showToast(`번역 실패: ${error.message}`);
+  }
+}
 
 for (const tab of document.querySelectorAll(".mobile-tab")) {
   tab.addEventListener("click", () => {
@@ -136,3 +258,4 @@ window.addEventListener("drop", (event) => {
 
 input.value = SAMPLE;
 updateDocument();
+scheduleTranslation();

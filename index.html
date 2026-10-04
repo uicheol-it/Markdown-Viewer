@@ -13,7 +13,7 @@
   <body>
     <div class="app-shell">
       <header class="topbar">
-        <a class="brand" href="/" aria-label="Markdown Viewer 홈">
+        <a class="brand" href="./" aria-label="Markdown Viewer 홈">
           <span class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 32 32" fill="none">
               <rect x="2" y="4" width="28" height="24" rx="7" fill="currentColor" />
@@ -31,7 +31,7 @@
             <svg viewBox="0 0 16 16" aria-hidden="true">
               <path d="M8 1.5 2.5 4v3.8c0 3.3 2.3 5.8 5.5 6.7 3.2-.9 5.5-3.4 5.5-6.7V4L8 1.5Zm2.6 4.8-3.1 3.5-2-1.7.9-1 1 .9 2.1-2.5 1.1.8Z" fill="currentColor" />
             </svg>
-            파일은 이 기기에서만 처리됩니다
+            문서는 기본적으로 이 기기에서만 처리됩니다
           </span>
           <button class="button button-primary" id="open-file-button" type="button">
             <svg viewBox="0 0 20 20" aria-hidden="true">
@@ -102,11 +102,25 @@
                 <span class="pane-dot preview-dot"></span>
                 <h2>미리보기</h2>
               </div>
-              <span class="rendered-label">
-                <span class="rendered-dot"></span>
-                렌더링 완료
-              </span>
+              <div class="preview-actions">
+                <div class="preview-tabs" role="group" aria-label="미리보기 언어">
+                  <button class="preview-tab active" id="preview-original-button" type="button" aria-pressed="true">원문</button>
+                  <button class="preview-tab" id="preview-korean-button" type="button" aria-pressed="false">한국어 번역</button>
+                </div>
+                <button class="button button-subtle translation-settings-button" id="translation-settings-button" type="button" aria-expanded="false" aria-controls="translation-settings">번역 설정</button>
+              </div>
             </div>
+            <section class="translation-settings" id="translation-settings" hidden aria-labelledby="translation-settings-title">
+              <h3 id="translation-settings-title">한국어 자동 번역</h3>
+              <p>번역을 사용하면 문서 전체가 아래 서비스로 전송됩니다. 서비스의 개인정보 처리 방침을 확인하세요. 번역을 시작하기 전에 동의를 요청합니다.</p>
+              <label for="translation-endpoint">번역 서비스 주소</label>
+              <div class="translation-endpoint-row">
+                <input id="translation-endpoint" type="url" inputmode="url" autocomplete="url" placeholder="https://translate.example.com/translate" />
+                <button class="button button-primary" id="save-translation-settings" type="button">저장</button>
+              </div>
+              <p class="translation-contract">HTTPS와 CORS를 지원하는 서비스가 필요합니다. API 키는 입력하거나 저장하지 않습니다.</p>
+            </section>
+            <p class="translation-status" id="translation-status" role="status" aria-live="polite">번역 서비스 주소를 설정하면 한국어가 아닌 문서를 자동 번역합니다.</p>
             <article class="preview-content" id="preview-content" aria-label="마크다운 렌더링 미리보기"></article>
           </div>
         </section>
